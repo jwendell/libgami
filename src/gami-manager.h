@@ -136,13 +136,15 @@ struct _GamiManagerClass
 
 /**
  * GamiManagerNewAsyncFunc:
- * @gami: the newly created #GamiManager
+ * @gami: the newly created #GamiManager or %NULL if case of failure
  * @user_data: user data passed to the function
+ * @error: The error message in case of failure. Do not unref it.
  *
  * Specifies the type of functions passed to gami_manager_new_async()
  */
 typedef void (*GamiManagerNewAsyncFunc) (GamiManager *gami,
-										 gpointer user_data);
+										 gpointer user_data,
+										 GError *error);
 /**
  * gami_manager_get_type:
  *
@@ -152,7 +154,7 @@ typedef void (*GamiManagerNewAsyncFunc) (GamiManager *gami,
  */
 GType gami_manager_get_type (void) G_GNUC_CONST;
 
-GamiManager *gami_manager_new (const gchar *host, guint port);
+GamiManager *gami_manager_new (const gchar *host, guint port, GError **error);
 void         gami_manager_new_async (const gchar *host, guint port,
 									 GamiManagerNewAsyncFunc func,
 									 gpointer user_data);

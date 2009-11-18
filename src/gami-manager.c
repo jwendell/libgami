@@ -119,18 +119,18 @@ static void join_user_event_headers (gchar *key, gchar *value, GString *s);
  * gami_manager_new:
  * @host: Asterisk manager host.
  * @port: Asterisk manager port.
+ * @error: return location for an error, or %NULL
  *
  * This function creates an instance of %GAMI_TYPE_MANAGER connected to
  * @host:@port.
  *
- * Returns: A new #GamiManager
+ * Returns: A new #GamiManager or %NULL in case of failure
  */
 GamiManager *
-gami_manager_new (const gchar *host, guint port)
+gami_manager_new (const gchar *host, guint port, GError **error)
 {
     GamiManager *ami;
     GHook *parser, *events;
-    GError  *error = NULL;
 
 	ami = g_object_new (GAMI_TYPE_MANAGER,
 	                    "host", host,
@@ -138,11 +138,7 @@ gami_manager_new (const gchar *host, guint port)
 	                    "log_domain", G_LOG_DOMAIN,
 	                    NULL);
 
-    if (! gami_manager_connect (ami, &error)) {
-        g_warning ("Failed to connect to the server%s%s",
-                   error ? ": " : "",
-                   error ? error->message : "");
-
+    if (! gami_manager_connect (ami, error)) {
         g_object_unref (ami);
         return NULL;
     }
@@ -7001,10 +6997,13 @@ static gboolean
 gami_manager_new_async_cb (GamiManagerNewAsyncData *data)
 {
     GamiManager *gami;
+    GError *error;
 
-    gami = gami_manager_new (data->host, data->port);
-    data->func (gami, data->data);
+    error = NULL;
+    gami = gami_manager_new (data->host, data->port, &error);
+    data->func (gami, data->data, error);
 
+    g_clear_error (&error);
     return FALSE; /* for g_idle_add() */
 }
 
