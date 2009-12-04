@@ -7015,6 +7015,7 @@ gami_manager_new_async_cb (GamiManagerNewAsyncData *data)
     data->func (gami, data->data, error);
 
     g_clear_error (&error);
+    g_free (data);
     return FALSE; /* for g_idle_add() */
 }
 
