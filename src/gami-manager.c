@@ -101,7 +101,7 @@ enum {
 
 G_DEFINE_TYPE (GamiManager, gami_manager, G_TYPE_OBJECT);
 
-static gboolean gami_manager_new_async_cb (GamiManagerNewAsyncData *data);
+static gpointer gami_manager_new_async_cb (GamiManagerNewAsyncData *data);
 static gboolean parse_connection_string (GamiManager *ami, GError **error);
 static gchar *event_string_from_mask (GamiManager *ami, GamiEventMask mask);
 
@@ -179,11 +179,9 @@ gami_manager_new_async (const gchar *host, guint port,
     data->func = func;
     data->data = user_data;
 
-    if (g_thread_supported ())
-        g_thread_create ((GThreadFunc) gami_manager_new_async_cb, data,
-                         FALSE, NULL);
-    else
-        g_idle_add ((GSourceFunc) gami_manager_new_async_cb, data);
+    g_thread_new ("gami_manager_new_async",
+                  (GThreadFunc) gami_manager_new_async_cb,
+                  data);
 }
 
 /**
@@ -7004,7 +7002,7 @@ gboolean gami_manager_wait_event_finish (GamiManager *ami,
  * Private API
  */
 
-static gboolean
+static gpointer
 gami_manager_new_async_cb (GamiManagerNewAsyncData *data)
 {
     GamiManager *gami;
@@ -7016,7 +7014,7 @@ gami_manager_new_async_cb (GamiManagerNewAsyncData *data)
 
     g_clear_error (&error);
     g_free (data);
-    return FALSE; /* for g_idle_add() */
+    return NULL;
 }
 
 static gboolean
