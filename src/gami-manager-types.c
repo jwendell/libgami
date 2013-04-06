@@ -149,7 +149,7 @@ gami_queue_status_entry_unref (GamiQueueStatusEntry *entry)
     g_return_if_fail (entry != NULL);
     g_return_if_fail (entry->ref_count > 0);
 
-    if (g_atomic_int_exchange_and_add (&entry->ref_count, -1) - 1 == 0) {
+    if (g_atomic_int_dec_and_test (&entry->ref_count)) {
         g_hash_table_unref (entry->params);
         g_slist_foreach (entry->members, (GFunc) g_hash_table_unref, NULL);
         g_slist_free (entry->members);
